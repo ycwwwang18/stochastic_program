@@ -1,6 +1,7 @@
 from gurobipy import *
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 random.seed(a=100)  # 设置随机生成器的种子，保证可重复性
 np.random.seed(100)
@@ -297,7 +298,7 @@ class Subproblem:
                     for t in range(self.T):
                         opt_idle_on[j, t] = idle_on[(j, t)].X
                 obj_value = m.ObjVal
-                return opt_x1, opt_x2, opt_y_off, opt_z_on, opt_overtime_off, opt_idle_off, opt_overtime_on, opt_idle_on, obj_value
+                return opt_x1, opt_x2, opt_y_off, opt_z_on, (opt_overtime_off, opt_idle_off, opt_overtime_on, opt_idle_on, obj_value)
             else:
                 return None
 
@@ -306,6 +307,96 @@ class Subproblem:
 
         except AttributeError:
             print('Encountered an attribute error')
+
+    def result_capacity_analysis(self, opt_x1, opt_x2, opt_y_off, opt_z_on):
+        """输出每个医生的容量分配"""
+        fv_with_rv = opt_x1.sum(axis=0)
+        fv_without_rv = opt_x2.sum(axis=0)
+        rv_off = opt_y_off.sum(axis=0)
+        rv_on = opt_z_on.sum(axis=0)
+
+        p_1_capacity_assign = np.empty(shape=(self.L, 4))
+        p_2_capacity_assign = np.empty(shape=(self.L, 4))
+        p_3_capacity_assign = np.empty(shape=(self.L, 4))
+        p_4_capacity_assign = np.empty(shape=(self.L, 4))
+
+        # physician 1
+        for k in range(self.k + 1, self.k + self.L + 1):
+            p_1_capacity_assign[k - self.k - 1, 0] = fv_with_rv[0, k]
+            p_1_capacity_assign[k - self.k - 1, 1] = fv_without_rv[0, k]
+            p_1_capacity_assign[k - self.k - 1, 2] = rv_off[0, k]
+            p_1_capacity_assign[k - self.k - 1, 3] = rv_on[0, k]
+
+        # physician 2
+        for k in range(self.k + 1, self.k + self.L + 1):
+            p_2_capacity_assign[k - self.k - 1, 0] = fv_with_rv[1, k]
+            p_2_capacity_assign[k - self.k - 1, 1] = fv_without_rv[1, k]
+            p_2_capacity_assign[k - self.k - 1, 2] = rv_off[1, k]
+            p_2_capacity_assign[k - self.k - 1, 3] = rv_on[1, k]
+
+        # physician 3
+        for k in range(self.k + 1, self.k + self.L + 1):
+            p_3_capacity_assign[k - self.k - 1, 0] = fv_with_rv[2, k]
+            p_3_capacity_assign[k - self.k - 1, 1] = fv_without_rv[2, k]
+            p_3_capacity_assign[k - self.k - 1, 2] = rv_off[2, k]
+            p_3_capacity_assign[k - self.k - 1, 3] = rv_on[2, k]
+
+        # physician 4
+        for k in range(self.k + 1, self.k + self.L + 1):
+            p_4_capacity_assign[k - self.k - 1, 0] = fv_with_rv[3, k]
+            p_4_capacity_assign[k - self.k - 1, 1] = fv_without_rv[3, k]
+            p_4_capacity_assign[k - self.k - 1, 2] = rv_off[3, k]
+            p_4_capacity_assign[k - self.k - 1, 3] = rv_on[3, k]
+
+        # 作图
+        # physician 1
+        x = np.arange(p_1_capacity_assign.shape[0])  # 横坐标的索引
+        bottom = np.zeros_like(p_1_capacity_assign[:,0])  # 初始化底部高度为0
+        label = ['FV with RV', 'FV without RV', 'Offline Revisit', 'Online Revisit']
+        for i in range(p_1_capacity_assign.shape[1]):
+            plt.bar(x, p_1_capacity_assign[:, i], width=0.45, bottom=bottom, label=label[i])
+            bottom += p_1_capacity_assign[:, i]  # 更新底部高度
+        plt.legend()
+        plt.xlabel('Planning horizon(day)')
+        plt.ylabel('Capacity(min)')
+        plt.title('Physician One')
+        plt.show()
+
+        # physician 2
+        x = np.arange(p_2_capacity_assign.shape[0])  # 横坐标的索引
+        bottom = np.zeros_like(p_2_capacity_assign[:, 0])  # 初始化底部高度为0
+        for i in range(p_2_capacity_assign.shape[1]):
+            plt.bar(x, p_2_capacity_assign[:, i], width=0.45, bottom=bottom, label=label[i])
+            bottom += p_2_capacity_assign[:, i]  # 更新底部高度
+        plt.legend()
+        plt.xlabel('Planning horizon(day)')
+        plt.ylabel('Capacity(min)')
+        plt.title('Physician Two')
+        plt.show()
+
+        # physician 3
+        x = np.arange(p_3_capacity_assign.shape[0])  # 横坐标的索引
+        bottom = np.zeros_like(p_3_capacity_assign[:, 0])  # 初始化底部高度为0
+        for i in range(p_3_capacity_assign.shape[1]):
+            plt.bar(x, p_3_capacity_assign[:, i], width=0.45, bottom=bottom, label=label[i])
+            bottom += p_3_capacity_assign[:, i]  # 更新底部高度
+        plt.legend()
+        plt.xlabel('Planning horizon(day)')
+        plt.ylabel('Capacity(min)')
+        plt.title('Physician Three')
+        plt.show()
+
+        # physician 4
+        x = np.arange(p_4_capacity_assign.shape[0])  # 横坐标的索引
+        bottom = np.zeros_like(p_4_capacity_assign[:, 0])  # 初始化底部高度为0
+        for i in range(p_4_capacity_assign.shape[1]):
+            plt.bar(x, p_4_capacity_assign[:, i], width=0.45, bottom=bottom, label=label[i])
+            bottom += p_4_capacity_assign[:, i]  # 更新底部高度
+        plt.legend()
+        plt.xlabel('Planning horizon(day)')
+        plt.ylabel('Capacity(min)')
+        plt.title('Physician Four')
+        plt.show()
 
 
 if __name__ ==  "__main__":
@@ -318,4 +409,5 @@ if __name__ ==  "__main__":
     rho = [0, 0]
 
     sub_problem = Subproblem(revisit_status, lagrangian_multipliers_1, lagrangian_multipliers_2, rho, i_1, i_2, k)
-    sub_problem.run_model()
+    opt_x1, opt_x2, opt_y_off, opt_z_on, _ = sub_problem.run_model()
+    sub_problem.result_capacity_analysis(opt_x1, opt_x2, opt_y_off, opt_z_on)
