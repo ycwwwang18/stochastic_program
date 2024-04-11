@@ -7,7 +7,7 @@ random.seed(a=100)  # 设置随机生成器的种子，保证可重复性
 np.random.seed(100)
 
 
-class Subproblem:
+class SubProblem:
     def __init__(self, revisit_status, lagrangian_multipliers_1, lagrangian_multipliers_2, rho, i_1, i_2, k):
         """
         revisit_status: the revisit status of first visit patients with revisit, offline or online, dimension: i_1
@@ -408,6 +408,6 @@ if __name__ ==  "__main__":
     lagrangian_multipliers_2 = np.zeros(shape=(i_2, 4, 17))
     rho = [0, 0]
 
-    sub_problem = Subproblem(revisit_status, lagrangian_multipliers_1, lagrangian_multipliers_2, rho, i_1, i_2, k)
+    sub_problem = SubProblem(revisit_status, lagrangian_multipliers_1, lagrangian_multipliers_2, rho, i_1, i_2, k)
     opt_x1, opt_x2, opt_y_off, opt_z_on, _ = sub_problem.run_model()
     sub_problem.result_capacity_analysis(opt_x1, opt_x2, opt_y_off, opt_z_on)
