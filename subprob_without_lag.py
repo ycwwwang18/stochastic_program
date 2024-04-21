@@ -7,15 +7,15 @@ random.seed(a=100)  # 设置随机生成器的种子，保证可重复性
 np.random.seed(100)
 
 
-class SubProblem:
-    def __init__(self, health_status, i_1, i_2, k):
+class SubProblemInit:
+    def __init__(self, i_1, i_2, k):
         """
         revisit_status: the revisit status of first visit patients with revisit, offline or online, dimension: i_1
         lagrangian_multipliers: mu, dimensions: j, t, i_1 or i_2
         rho: rho_1, rho_2 are the penalty parameters in Lagrangian relaxation
         consensus_para: x^hat, dimensions: j, t, i_1 or i_2
         """
-        self.health_status = health_status
+        # self.health_status = health_status
         self.I_1 = i_1
         self.I_2 = i_2
         self.k = k
@@ -129,7 +129,7 @@ class SubProblem:
         # infinite positive numbers
         self.M = 99999999
 
-    def run_model(self):
+    def run_model(self, health_status):
         # 建模
         try:
             """创建模型"""
@@ -171,7 +171,7 @@ class SubProblem:
 
             continuity_cost = self.continuity_violation * quicksum(if_same_physician[i_1] for i_1 in self.FV_with_RV)
 
-            care_cost = self.health_cost * quicksum(off_or_on[i_1] - self.health_status[i_1] for i_1 in self.FV_with_RV)
+            care_cost = self.health_cost * quicksum(off_or_on[i_1] - health_status[i_1] for i_1 in self.FV_with_RV)
 
             obj_value = over_idle_cost_off + over_idle_cost_on + continuity_cost + care_cost
 
@@ -283,7 +283,7 @@ class SubProblem:
                  ) for j in self.physicians) for i_1 in self.FV_with_RV)
 
             """模型求解"""
-            m.Params.LogToConsole = True  # 显示求解过程
+            m.Params.LogToConsole = False  # 显示求解过程
             m.Params.TimeLimit = 100  # 限制求解时间为1000s
             m.optimize()
 
@@ -329,7 +329,8 @@ class SubProblem:
                     for t in range(self.T):
                         opt_idle_on[j, t] = idle_on[(j, t)].X
                 obj_value = m.ObjVal
-                return opt_x_1, opt_x_2, opt_y_off, opt_z_on, opt_v, (opt_overtime_off, opt_idle_off, opt_overtime_on, opt_idle_on, obj_value)
+                # return opt_x_1, opt_x_2, opt_y_off, opt_z_on, opt_v, (opt_overtime_off, opt_idle_off, opt_overtime_on, opt_idle_on, obj_value)
+                return opt_x_1, opt_x_2
             else:
                 return None
 
@@ -430,12 +431,12 @@ class SubProblem:
         plt.show()
 
 
-if __name__ ==  "__main__":
-    I_1 = np.random.poisson(lam=78.5)  # average daily numbers of patient FV with RV is 28.5
-    I_2 = np.random.poisson(lam=68.1)
-    k = 1
-    Health_status = np.random.binomial(1, 0.4, I_1)
-
-    sub_problem = SubProblem(Health_status, I_1, I_2, k)
-    opt_x1, opt_x2, opt_y_off, opt_z_on, opt_v, _ = sub_problem.run_model()
-    sub_problem.result_capacity_analysis(opt_x1, opt_x2, opt_y_off, opt_z_on)
+# if __name__ ==  "__main__":
+#     I_1 = np.random.poisson(lam=78.5)  # average daily numbers of patient FV with RV is 28.5
+#     I_2 = np.random.poisson(lam=68.1)
+#     k = 1
+#     Health_status = np.random.binomial(1, 0.4, I_1)
+#
+#     sub_problem = SubProblem(Health_status, I_1, I_2, k)
+#     opt_x1, opt_x2, opt_y_off, opt_z_on, opt_v, _ = sub_problem.run_model()
+#     sub_problem.result_capacity_analysis(opt_x1, opt_x2, opt_y_off, opt_z_on)
