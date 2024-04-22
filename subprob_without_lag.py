@@ -118,6 +118,8 @@ class SubProblemInit:
         self.over_idle_cost_off = 1.5  # offline overtime or idle costs
         self.over_idle_cost_on = 1  # online overtime or idle costs
         self.health_cost = 1  # online revisit cost for uncontrolled physicians
+        self.setup_cost_off = 1.5  # fixed offline service setup cost
+        self.setup_cost_on = 1
 
         # sets
         self.arriving_horizon = range(self.K)  # set of periods within an arriving horizon
@@ -173,7 +175,11 @@ class SubProblemInit:
 
             care_cost = self.health_cost * quicksum(off_or_on[i_1] - health_status[i_1] for i_1 in self.FV_with_RV)
 
-            obj_value = over_idle_cost_off + over_idle_cost_on + continuity_cost + care_cost
+            setup_cost_off = self.setup_cost_off * self.offline_open.sum(axis=(0, 1))
+
+            setup_cost_on = self.setup_cost_on * self.online_open.sum(axis=(0, 1))
+
+            obj_value = over_idle_cost_off + over_idle_cost_on + continuity_cost + care_cost + setup_cost_off + setup_cost_on
 
             m.setObjective(obj_value, GRB.MINIMIZE)
 
