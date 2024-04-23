@@ -8,7 +8,7 @@ np.random.seed(100)
 
 
 class SubProblemInit:
-    def __init__(self, i_1, i_2, k):
+    def __init__(self, i_1, i_2, k, offline_capa, online_capa):
         """
         revisit_status: the revisit status of first visit patients with revisit, offline or online, dimension: i_1
         lagrangian_multipliers: mu, dimensions: j, t, i_1 or i_2
@@ -22,47 +22,49 @@ class SubProblemInit:
         self.J = 4  # num of physician
         self.MWTT_FV_with_RV = 3  # the appointment maximum wait time target of FV with RV patients
         self.MWTT_FV_without_RV = 5
-        self.total_capacity = 480  # the total daily capacity of each physician
-        self.online_capacities = np.array([  # online capacities of four physicians in the planning horizon
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60],
-            [60, 60, 60, 60]
-        ])
-        self.online_capacities = self.online_capacities.T
-        self.offline_capacities = np.array([  # offline capacities of four physicians in the planning horizon
-            [240, 240, 240, 240],
-            [240, 240, 240, 240],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420],
-            [420, 420, 420, 420]
-        ])
-        self.offline_capacities = self.offline_capacities.T
+        # self.total_capacity = 480  # the total daily capacity of each physician
+        # self.online_capacities = np.array([  # online capacities of four physicians in the planning horizon
+        #     [0, 0, 0, 0],
+        #     [0, 0, 0, 0],
+        #     [0, 0, 0, 0],
+        #     [0, 0, 0, 0],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60],
+        #     [60, 60, 60, 60]
+        # ])
+        # self.online_capacities = self.online_capacities.T
+        # self.offline_capacities = np.array([  # offline capacities of four physicians in the planning horizon
+        #     [240, 240, 240, 240],
+        #     [240, 240, 240, 240],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420],
+        #     [420, 420, 420, 420]
+        # ])
+        # self.offline_capacities = self.offline_capacities.T
+        self.offline_capacities = offline_capa
+        self.online_capacities = online_capa
         self.offline_open = np.array([  # whether offline capacities are open for each physician
             [1, 1, 1, 1],
             [1, 1, 1, 1],
